@@ -1,12 +1,10 @@
-#include "socket_linux.h"
-#include <stdexcept>
-#include <cstring>
+#include "socket_windows.h"
 
 namespace socket_common {
-    TcpSocket::TcpSocket(int sock, const std::string& host, unsigned int port) : 
+    TcpSocket::TcpSocket(int sock, const std::string& host, unsigned int port) :
     _sock(sock),
     _host(host),
-    _port(port){
+    _port(port) {
 
     }
 
@@ -14,6 +12,18 @@ namespace socket_common {
     _host(host),
     _port(port) {
 
+    }
+
+    void TcpSocket::Initialize() {
+        WSADATA wsaData;
+        int result = WSAStartUp(MAKEWORD(2,2), &wsaData);
+        if(result != 0) {
+            throw std::runtime_error("WSAStartup failed with error: "+std::to_string(result);
+        }
+    }
+
+    void TcpSocket::CleanUp() {
+        WSACleanUp();
     }
 
     void TcpSocket::Connect() {
@@ -38,16 +48,30 @@ namespace socket_common {
         }
     }
 
+    struct addrinfo* TcpSocket::getHostInfo() const {
+        struct addrinfo hints;
+        struct addrinfo *result;
+        int s;
+
+        std::memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET;    /* Allow IPv4 or IPv6 */
+        hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
+        hints.ai_flags = 0;
+        hints.ai_protocol = 0;          /* Any protocol */
+        
+        s = getaddrinfo(_host.c_str(), std::to_string(_port).c_str(), &hints, &result);
+        if (s != 0) {
+            throw std::runtime_error("host not found");
+        }
+
+        return result;
+    }
+
     void TcpSocket::Close() {
-        int ret = close(_sock);
+        int ret = closesocket(_sock);
         if(ret < 0) {
             throw std::runtime_error("close socket failed");
         }
-    }
-
-    int TcpSocket::Send(const std::string& message) const {
-        int ret = send(_sock, message.data(), message.size(), 0);
-        return ret;
     }
 
     std::vector<unsigned char> TcpSocket::Receive(int len) const {
@@ -56,8 +80,15 @@ namespace socket_common {
         int ret = recv(_sock, &buffer[0], len, 0);
         if(ret == 0) {
             buffer.resize(0);
+        }else if(ret < 0) {
+            throw std::runtime_error("recv failed: "+std::to_string(WSAGetLastError()));
         }
         return buffer;
+    }
+
+    int TcpSocket::Send(const std::string& message) const {
+        int ret = send(_sock, message.data(), message.size(), 0);
+        return ret;
     }
 
     void TcpSocket::Bind() {
@@ -97,25 +128,6 @@ namespace socket_common {
         int sock = accept(_sock, (struct sockaddr*)& peer_addr, &peer_len);
         
         return TcpSocket(sock, Host(), Port());
-    }
-
-    struct addrinfo* TcpSocket::getHostInfo() const {
-        struct addrinfo hints;
-        struct addrinfo *result;
-        int s;
-
-        std::memset(&hints, 0, sizeof(hints));
-        hints.ai_family = AF_INET;    /* Allow IPv4 or IPv6 */
-        hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
-        hints.ai_flags = 0;
-        hints.ai_protocol = 0;          /* Any protocol */
-        
-        s = getaddrinfo(_host.c_str(), std::to_string(_port).c_str(), &hints, &result);
-        if (s != 0) {
-            throw std::runtime_error("host not found");
-        }
-
-        return result;
     }
 
     const std::string TcpSocket::Host() const {

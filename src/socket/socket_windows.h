@@ -1,22 +1,18 @@
-#ifndef _SOCKET_LINUX_HPP
-#define _SOCKET_LINUX_HPP
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <string>
-#include <vector>
+#ifndef _SOCKET_WINDOWS_HPP
+#define _SOCKET_WINDOWS_HPP
 
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
 namespace socket_common {
 
     class TcpSocket {
     private:
-        int _sock;
+        SOCKET _sock;
         std::string _host;
         unsigned int _port;
+        bool _init;
 
         struct addrinfo* getHostInfo() const;
 
@@ -31,12 +27,18 @@ namespace socket_common {
         void Bind();
         void Listen();
         TcpSocket Accept();
-        void Initialize() {}
+        void Initialize();
+        void CleanUp();
 
         const std::string Host() const;
         const unsigned int Port() const;
     };
-} // socket_common
+
+}
 
 
-#endif // _SOCKET_LINUX_HPP
+
+
+
+
+#endif // _SOCKET_WINDOWS_HPP
