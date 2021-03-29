@@ -1,0 +1,3 @@
+[submodule "Logging"]
+	path = Logging
+	url = git@github.com:LonelyDriver/Logging.git

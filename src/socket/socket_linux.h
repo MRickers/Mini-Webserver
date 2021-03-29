@@ -31,7 +31,7 @@ namespace socket_common {
         void Bind();
         void Listen();
         TcpSocket Accept();
-        void Initialize() {}
+        void CleanUp() {}
 
         const std::string Host() const;
         const unsigned int Port() const;

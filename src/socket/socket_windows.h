@@ -1,9 +1,10 @@
 #ifndef _SOCKET_WINDOWS_HPP
 #define _SOCKET_WINDOWS_HPP
 
-#include <windows.h>
-#include <winsock2.h>
+#include <WinSock2.h>
 #include <ws2tcpip.h>
+#include <string>
+#include <vector>
 
 namespace socket_common {
 
@@ -23,11 +24,10 @@ namespace socket_common {
         void Connect();
         void Close();
         int Send(const std::string& message) const;
-        std::vector<unsigned char> Receive(int len) const;
+        std::vector<char> Receive(int len) const;
         void Bind();
         void Listen();
         TcpSocket Accept();
-        void Initialize();
         void CleanUp();
 
         const std::string Host() const;
@@ -35,10 +35,6 @@ namespace socket_common {
     };
 
 }
-
-
-
-
 
 
 #endif // _SOCKET_WINDOWS_HPP

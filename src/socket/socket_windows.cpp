@@ -1,4 +1,7 @@
 #include "socket_windows.h"
+#include <stdexcept>
+#include <iostream>
+
 
 namespace socket_common {
     TcpSocket::TcpSocket(int sock, const std::string& host, unsigned int port) :
@@ -11,19 +14,17 @@ namespace socket_common {
     TcpSocket::TcpSocket(const std::string& host, unsigned int port) :
     _host(host),
     _port(port) {
+        WSADATA wsadata;
 
-    }
-
-    void TcpSocket::Initialize() {
-        WSADATA wsaData;
-        int result = WSAStartUp(MAKEWORD(2,2), &wsaData);
-        if(result != 0) {
-            throw std::runtime_error("WSAStartup failed with error: "+std::to_string(result);
+        if(WSAStartup(WINSOCK_VERSION, &wsadata) != NO_ERROR) {
+            std::cout << "Initializing sockets failed: "<< WSAGetLastError() << std::endl;
+            CleanUp();
+            throw std::runtime_error("Initializing sockets failed: "+ std::to_string(WSAGetLastError()));
         }
     }
 
     void TcpSocket::CleanUp() {
-        WSACleanUp();
+        WSACleanup();
     }
 
     void TcpSocket::Connect() {
@@ -74,8 +75,8 @@ namespace socket_common {
         }
     }
 
-    std::vector<unsigned char> TcpSocket::Receive(int len) const {
-        std::vector<unsigned char> buffer;
+    std::vector<char> TcpSocket::Receive(int len) const {
+        std::vector<char> buffer;
         buffer.resize(len);
         int ret = recv(_sock, &buffer[0], len, 0);
         if(ret == 0) {
@@ -122,7 +123,7 @@ namespace socket_common {
 
     TcpSocket TcpSocket::Accept() {
         struct sockaddr peer_addr;
-        socklen_t peer_len;
+        int peer_len;
 
         peer_len = sizeof(peer_addr);
         int sock = accept(_sock, (struct sockaddr*)& peer_addr, &peer_len);

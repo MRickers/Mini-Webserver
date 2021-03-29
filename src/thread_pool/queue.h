@@ -1,6 +1,7 @@
 #ifndef _QUEUE_HPP
 #define _QUEUE_HPP
 #include <queue>
+#include <mutex>
 
 namespace queue {
     template<typename T>
