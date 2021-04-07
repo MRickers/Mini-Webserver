@@ -32,6 +32,7 @@ namespace socket_common {
         void Listen();
         TcpSocket Accept();
         void CleanUp() {}
+        void Set_Socket_Reuse() {}
 
         const std::string Host() const;
         const unsigned int Port() const;

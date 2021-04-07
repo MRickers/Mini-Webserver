@@ -20,18 +20,21 @@ namespace socket_common {
     public:
         TcpSocket(int sock, const std::string& host, unsigned int port);
         TcpSocket(const std::string& host, unsigned int port);
+        TcpSocket(unsigned int port);
 
         void Connect();
         void Close();
         int Send(const std::string& message) const;
-        std::vector<char> Receive(int len) const;
+        int Receive(std::vector<char>& buffer, int len) const;
         void Bind();
         void Listen();
         TcpSocket Accept();
         void CleanUp();
+        void SetSocketReuse();
 
         const std::string Host() const;
         const unsigned int Port() const;
+        void Debug(bool flag);
     };
 
 }

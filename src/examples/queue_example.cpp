@@ -35,7 +35,10 @@ int main() {
     const auto size = q.Size();
     for(int i=0;i<size;i++) {
         const auto j = q.Pop();
-        j(logger);
+        if(j.has_value()) {
+            const auto func = j.value();
+            func(logger);
+        }
     }
 
     logger->Debug("Cya");

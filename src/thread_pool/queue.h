@@ -2,6 +2,7 @@
 #define _QUEUE_HPP
 #include <queue>
 #include <mutex>
+#include <optional>
 
 namespace queue {
     template<typename T>
@@ -16,11 +17,16 @@ namespace queue {
         BlockingQueue() = default;
         
         void Push(const T& data);
-        T Pop();
+        std::optional<T> Pop();
 
         size_t Size() const {
             std::lock_guard<std::mutex> lock(_mutex);
             return _queue.size();
+        }
+
+        bool Empty() const {
+            std::lock_guard<std::mutex> lock(_mutex);
+            return _queue.empty();
         }
     };
 }

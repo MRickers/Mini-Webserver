@@ -1,2 +1,2 @@
 # Mini_Webserver
-Write something abount your project.
+Write something about your project.

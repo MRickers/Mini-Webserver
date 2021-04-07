@@ -1,9 +1,16 @@
-#include "socket_windows.h"
+#include "socket.h"
 #include <stdexcept>
 #include <iostream>
+#include "logging_manager.h"
+
+Logger logging = LogManager::GetLogger("Socket");
 
 
 namespace socket_common {
+    TcpSocket::TcpSocket(unsigned int port) : TcpSocket{"localhost", port} {
+
+    }
+
     TcpSocket::TcpSocket(int sock, const std::string& host, unsigned int port) :
     _sock(sock),
     _host(host),
@@ -17,9 +24,9 @@ namespace socket_common {
         WSADATA wsadata;
 
         if(WSAStartup(WINSOCK_VERSION, &wsadata) != NO_ERROR) {
-            std::cout << "Initializing sockets failed: "<< WSAGetLastError() << std::endl;
+            logging->Error(STREAM("Initializing sockets failed: "<< WSAGetLastError()));
             CleanUp();
-            throw std::runtime_error("Initializing sockets failed: "+ std::to_string(WSAGetLastError()));
+            throw SocketException(std::string{"initializing sockets failed: "+std::to_string(WSAGetLastError())}, WSAGetLastError());
         }
     }
 
@@ -45,7 +52,7 @@ namespace socket_common {
         freeaddrinfo(result);           /* No longer needed */
 
         if (rp == NULL) {               /* No address succeeded */
-            throw std::runtime_error("could not connect");
+            throw SocketException(std::string{"could not connect: "+std::to_string(WSAGetLastError())}, WSAGetLastError());
         }
     }
 
@@ -62,7 +69,7 @@ namespace socket_common {
         
         s = getaddrinfo(_host.c_str(), std::to_string(_port).c_str(), &hints, &result);
         if (s != 0) {
-            throw std::runtime_error("host not found");
+            throw SocketException(std::string{"host not found: "+std::to_string(WSAGetLastError())}, WSAGetLastError());
         }
 
         return result;
@@ -71,20 +78,18 @@ namespace socket_common {
     void TcpSocket::Close() {
         int ret = closesocket(_sock);
         if(ret < 0) {
-            throw std::runtime_error("close socket failed");
+            throw SocketException(std::string{"close socket failed: "+std::to_string(WSAGetLastError())}, WSAGetLastError());
         }
     }
 
-    std::vector<char> TcpSocket::Receive(int len) const {
-        std::vector<char> buffer;
-        buffer.resize(len);
+    int TcpSocket::Receive(std::vector<char>& buffer, int len) const {
         int ret = recv(_sock, &buffer[0], len, 0);
         if(ret == 0) {
-            buffer.resize(0);
+            logging->Debug("peer shutdown");
         }else if(ret < 0) {
-            throw std::runtime_error("recv failed: "+std::to_string(WSAGetLastError()));
+            throw SocketException(std::string{"recv failed: "+std::to_string(WSAGetLastError())}, WSAGetLastError());
         }
-        return buffer;
+        return ret;
     }
 
     int TcpSocket::Send(const std::string& message) const {
@@ -110,7 +115,7 @@ namespace socket_common {
         freeaddrinfo(result);           /* No longer needed */
 
         if (rp == NULL) {               /* No address succeeded */
-            throw std::runtime_error("could not bind");
+            throw SocketException{"could not bind", -1};
         }
     }
 
@@ -122,11 +127,13 @@ namespace socket_common {
     }
 
     TcpSocket TcpSocket::Accept() {
-        struct sockaddr peer_addr;
+        struct sockaddr_in peer_addr;
         int peer_len;
 
         peer_len = sizeof(peer_addr);
         int sock = accept(_sock, (struct sockaddr*)& peer_addr, &peer_len);
+
+        logging->Debug(STREAM("Connected to client with address: "<<inet_ntoa(peer_addr.sin_addr)));
         
         return TcpSocket(sock, Host(), Port());
     }
@@ -138,4 +145,22 @@ namespace socket_common {
     const unsigned int TcpSocket::Port() const {
         return _port;
     }
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-setsockopt
+    void TcpSocket::SetSocketReuse() {
+        int ret = 0;
+        const char y = 1;
+        if ((ret = setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(y))) != 0) {
+            throw SocketException(std::string{"Set socket reuse failed: "+ret}, ret);
+        }
+    }
+
+    void Debug(bool flag) {
+        if(flag) {
+           logging->LoggingLevel(logger::Loglevel::L_DEBUG);
+        }else {
+            logging->LoggingLevel(logger::Loglevel::L_ERROR);
+        }
+    }
+
 }

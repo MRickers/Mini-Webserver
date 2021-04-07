@@ -8,13 +8,13 @@ namespace queue {
     }
 
     template<typename T>
-    T BlockingQueue<T>::Pop() {
+    std::optional<T> BlockingQueue<T>::Pop() {
         std::lock_guard<std::mutex> lock(_mutex);
         if(!_queue.empty()) {
             const auto item = _queue.front();
             _queue.pop();
             return item;
         }
-        
+        return {};
     }
 }
