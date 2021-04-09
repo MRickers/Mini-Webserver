@@ -7,7 +7,7 @@ Logger logging = LogManager::GetLogger("Socket");
 
 
 namespace socket_common {
-    TcpSocket::TcpSocket(unsigned int port) : TcpSocket{"localhost", port} {
+    TcpSocket::TcpSocket(unsigned int port) : TcpSocket{"", port} {
 
     }
 
