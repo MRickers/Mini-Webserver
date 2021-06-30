@@ -1,30 +1,17 @@
 #include "SocketRequestDispatcher.h"
 #include "SocketEventHandler.h"
+#include "Demultiplexer.h"
+#include <chrono>
+#include <thread>
 
 namespace webserver {
     SocketRequestDispatcher::SocketRequestDispatcher() : 
     m_handler(),
-    m_socket_fds(),
     m_master_socket("localhost", 5000),
     m_read_fds(),
-    m_write_fds(),
     m_logger(LogManager::GetLogger("Dispatcher")),
     m_tp(LogManager::GetLogger("Threadpool")) {
-        for(int i=0;i<MAX_CLIENTS;i++) {
-            m_socket_fds[i] = INVALID_SOCKET;
-        }
-        FD_ZERO(&m_read_fds);
-        FD_ZERO(&m_write_fds);
         
-        m_logger->Debug("Dispatcher ready");
-        try {
-            m_master_socket.Bind();
-            m_master_socket.Listen();
-            m_master_socket.SetSocketReuse();
-        }catch(const socket_common::SocketException& e) {
-            m_logger->Error(e.what());
-        }
-        FD_SET(m_master_socket.GetHandle(), &m_read_fds);
     }
 
     void SocketRequestDispatcher::RegisterHandler(EventHandler* handler, EventType et) {
@@ -36,29 +23,33 @@ namespace webserver {
     }
 
     void SocketRequestDispatcher::HandleEvents() {
+        multiplexer::Demultiplexer mltplx;
+
+        m_master_socket.Bind();
+        m_master_socket.Listen();
+        m_master_socket.SetSocketReuse();
+
+        m_read_fds.push_back(m_master_socket.GetHandle());
+        m_logger->Debug("Master ===== socket="+std::to_string(m_master_socket.GetHandle()));
+        m_logger->Debug(STREAM("Vector="<<m_read_fds.at(0)));
         m_logger->Debug("Handling events");
         while(true) {
-            handleEvents();
+            int fd = mltplx.Select(m_read_fds, std::vector<int>{}, std::vector<int>{}, 200);
+            m_logger->Debug("fd="+std::to_string(fd));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            if(fd == 0) {
+                continue;
+            }
+            handleEvents(fd);
         }
     }
 
-    void SocketRequestDispatcher::handleEvents() {
-        int max_fds = INVALID_SOCKET;
-        max_fds = m_master_socket.GetHandle();
-
-        int activity = select(max_fds+1, &m_read_fds, &m_write_fds, NULL, NULL);
-        if(activity > 0) {
-            if(FD_ISSET(m_master_socket.GetHandle(), &m_read_fds)) {
-                m_logger->Debug("Master socket incoming message");
-                auto new_sock = m_master_socket.Accept();
-                m_logger->Debug("Accept called");
-                std::unique_ptr<webserver::EventHandler> handler = std::make_unique<webserver::SocketHandler>(new_sock);
-                m_tp.Push([handler = std::move(handler)]{
-                    handler->HandleEvent();
-                });
-            } else {
-                m_logger->Debug("Nothing on master socket");
-            }
-        } 
+    void SocketRequestDispatcher::handleEvents(int fd) {
+        m_logger->Debug("Master socket="+std::to_string(m_master_socket.GetHandle()));
+        if(fd == m_master_socket.GetHandle()) {
+            m_logger->Debug("New connection incoming");
+            auto new_sock = m_master_socket.Accept();
+            m_read_fds.push_back(new_sock.GetHandle());
+        }
     }
 }

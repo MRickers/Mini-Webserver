@@ -11,16 +11,13 @@
 namespace webserver {
     class SocketRequestDispatcher : public EventDispatcher {
         private:
-            static const inline int MAX_CLIENTS = 12;
             std::unordered_map<EventType, EventHandler*> m_handler;
-            SOCK m_socket_fds[MAX_CLIENTS];
             socket_common::TcpSocket m_master_socket;
-            fd_set m_read_fds;
-            fd_set m_write_fds;
+            std::vector<int> m_read_fds;
             Logger m_logger;
             thread_pool::ThreadPool m_tp;
             
-            void handleEvents();
+            void handleEvents(int fd);
         public:
             SocketRequestDispatcher();
             void RegisterHandler(EventHandler* handler, EventType et) override;

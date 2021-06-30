@@ -8,6 +8,7 @@ if(WIN32)
 set(COMPILE_OPTIONS /GT /Gs /GS)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 include(InstallRequiredSystemLibraries)
+add_definitions(-DNOMINMAX) # to use std::max
 set(SOCKET_SOURCE socket/socket_windows.cpp)
 
 elseif(UNIX)

@@ -27,6 +27,7 @@ target_link_libraries(webserver_example socketlib)
 target_sources(event_server_example PRIVATE
 event_server/SocketRequestDispatcher.cpp
 event_server/SocketEventHandler.cpp
+event_server/Demultiplexer.cpp
 thread_pool/thread_pool.cpp)
 target_include_directories(event_server_example PRIVATE socket Logging/include event_server thread_pool)
 target_link_libraries(event_server_example logger socketlib)
