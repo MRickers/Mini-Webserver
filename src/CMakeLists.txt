@@ -23,3 +23,10 @@ thread_pool/thread_pool.cpp
 utils/ld_timer.cpp)
 target_include_directories(webserver_example PRIVATE webserver thread_pool socket utils)
 target_link_libraries(webserver_example socketlib)
+
+target_sources(event_server_example PRIVATE
+event_server/SocketRequestDispatcher.cpp
+event_server/SocketEventHandler.cpp
+thread_pool/thread_pool.cpp)
+target_include_directories(event_server_example PRIVATE socket Logging/include event_server thread_pool)
+target_link_libraries(event_server_example logger socketlib)

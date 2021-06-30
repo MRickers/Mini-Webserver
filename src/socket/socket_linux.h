@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+typedef int SOCK;
+#define INVALID_SOCKET  -1
 
 namespace socket_common {
 

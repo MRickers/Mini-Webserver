@@ -19,6 +19,7 @@ namespace thread_pool {
             _threads.push_back(std::thread(&ThreadPool::worker, this));
         }
         logger->Debug("Initializing threadpool for "+std::to_string(_thread_count)+" threads.");
+        while(_threads_running != _thread_count);
     }
 
     ThreadPool::~ThreadPool() {
@@ -32,6 +33,7 @@ namespace thread_pool {
     }
 
     void ThreadPool::worker() {
+        _threads_running++;
         while(_running) {
             if(!_running) {
                 break;

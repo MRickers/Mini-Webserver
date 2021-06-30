@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+typedef SOCKET SOCK;
+
 namespace socket_common {
 
     class TcpSocket {
@@ -31,6 +33,7 @@ namespace socket_common {
         TcpSocket Accept();
         void CleanUp();
         void SetSocketReuse();
+        SOCK GetHandle() const;
 
         const std::string Host() const;
         const unsigned int Port() const;

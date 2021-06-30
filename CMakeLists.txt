@@ -46,6 +46,10 @@ install(TARGETS thread_pool_example DESTINATION bin)
 add_executable(webserver_example src/examples/webserver_example.cpp)
 install(TARGETS webserver_example DESTINATION bin)
 
+add_executable(event_server_example  
+src/examples/event_server_example.cpp)
+install(TARGETS event_server_example DESTINATION bin)
+
 add_subdirectory(Logging)
 add_subdirectory(src)
 

@@ -3,14 +3,14 @@
 
 void func1() {
     auto logger = LogManager::GetLogger("func1");
-    logger->Debug(STREAM("Func1 waiting 2000 ms"));
+    logger->Debug(STREAM("waiting 2000 ms"));
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 }
 
 
 void func2() {
     auto logger = LogManager::GetLogger("func2");
-    logger->Debug(STREAM("Func1 waiting 5000 ms"));
+    logger->Debug(STREAM("waiting 5000 ms"));
     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 }
 
@@ -24,7 +24,6 @@ int main() {
         int a = 1;
         thread_pool::ThreadPool pool{LogManager::GetLogger("ThreadPool")};
 
-        std::this_thread::sleep_for(std::chrono::seconds(2));
         pool.Push(func1);
         pool.Push(func2);
         pool.Push([a, logging] {

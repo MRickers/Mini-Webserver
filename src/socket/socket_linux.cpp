@@ -108,7 +108,7 @@ namespace socket_common {
         hints.ai_family = AF_INET;    /* Allow IPv4 or IPv6 */
         hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
         hints.ai_flags = 0;
-        hints.ai_protocol = 0;          /* Any protocol */
+        hints.ai_protocol = IPPROTO_TCP;          /* Any protocol */
         
         s = getaddrinfo(_host.c_str(), std::to_string(_port).c_str(), &hints, &result);
         if (s != 0) {
