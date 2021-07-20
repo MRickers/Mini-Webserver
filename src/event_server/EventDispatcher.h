@@ -7,8 +7,8 @@ namespace webserver
     class EventDispatcher {
     public:
         virtual ~EventDispatcher() {}
-        virtual void RegisterHandler(EventHandler* handler, EventType et) = 0;
-        virtual void RemoveHandler(EventHandler* handler, EventType et) = 0;
+        virtual void RegisterHandler(EventHandlerPtr handler, EventType et) = 0;
+        virtual void RemoveHandler(EventType et) = 0;
         virtual void HandleEvents() = 0;
     };
 } // namespace webserver

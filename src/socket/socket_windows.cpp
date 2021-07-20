@@ -7,6 +7,13 @@ Logger logging = LogManager::GetLogger("Socket");
 
 
 namespace socket_common {
+    TcpSocket::TcpSocket(int sock) : 
+    _sock(sock),
+    _host(""),
+    _port(0) {
+
+    }
+
     TcpSocket::TcpSocket(unsigned int port) : TcpSocket{"", port} {
 
     }
@@ -21,6 +28,7 @@ namespace socket_common {
     TcpSocket::TcpSocket(const std::string& host, unsigned int port) :
     _host(host),
     _port(port) {
+        /*
         WSADATA wsadata;
 
         if(WSAStartup(WINSOCK_VERSION, &wsadata) != NO_ERROR) {
@@ -28,10 +36,7 @@ namespace socket_common {
             CleanUp();
             throw SocketException(std::string{"initializing sockets failed: "+std::to_string(WSAGetLastError())}, WSAGetLastError());
         }
-    }
-
-    void TcpSocket::CleanUp() {
-        WSACleanup();
+        */
     }
 
     void TcpSocket::Connect() {
@@ -167,4 +172,16 @@ namespace socket_common {
         return _sock;
     }
 
+    void TcpSocket::CleanUp() {
+        WSACleanup();
+    }
+    void TcpSocket::Init() {
+        WSADATA wsadata;
+
+        if(WSAStartup(WINSOCK_VERSION, &wsadata) != NO_ERROR) {
+            logging->Error(STREAM("Initializing sockets failed: "<< WSAGetLastError()));
+            CleanUp();
+            throw SocketException(std::string{"initializing sockets failed: "+std::to_string(WSAGetLastError())}, WSAGetLastError());
+        }
+    }
 }

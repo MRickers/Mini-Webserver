@@ -1,6 +1,7 @@
 #ifndef _EVENT_Handler_INTERFACE_HPP
 #define _EVENT_Handler_INTERFACE_HPP
 
+#include <memory>
 #include "logging_manager.h"
 
 enum class EventType {
@@ -15,12 +16,12 @@ namespace webserver {
     public:
         virtual ~EventHandler() {}
 
-        virtual void HandleEvent() = 0;
+        virtual int HandleEvent(int fd) = 0;
 
     };
 }
 
-
+using EventHandlerPtr = std::shared_ptr<webserver::EventHandler>;
 
 
 

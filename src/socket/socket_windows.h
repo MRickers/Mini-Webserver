@@ -23,6 +23,7 @@ namespace socket_common {
         TcpSocket(int sock, const std::string& host, unsigned int port);
         TcpSocket(const std::string& host, unsigned int port);
         TcpSocket(unsigned int port);
+        TcpSocket(int sock);
 
         void Connect();
         void Close();
@@ -31,13 +32,14 @@ namespace socket_common {
         void Bind();
         void Listen();
         TcpSocket Accept();
-        void CleanUp();
         void SetSocketReuse();
         SOCK GetHandle() const;
-
         const std::string Host() const;
         const unsigned int Port() const;
         void Debug(bool flag);
+
+        static void CleanUp();
+        static void Init();
     };
 
 }

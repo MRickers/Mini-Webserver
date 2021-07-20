@@ -23,8 +23,6 @@ set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 configure_file("config_version.h.in"
 ${CMAKE_SOURCE_DIR}/src/config_version.h)
 
-set(CMAKE_INSTALL_PREFIX .)
-
 option(testing "Execute tests" OFF)
 
 set(TESTS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/tests)

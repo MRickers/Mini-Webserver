@@ -6,13 +6,21 @@
 #include "socket.h"
 
 namespace webserver {
-    class SocketHandler : public EventHandler {
+    class SocketAcceptHandler : public EventHandler {
     private:
         Logger  m_logger;
-        socket_common::TcpSocket m_socket;
     public:
-        SocketHandler(const socket_common::TcpSocket socket, Logger logger=LogManager::GetLogger("SocketHandler"));
-        virtual void HandleEvent() override;
+        SocketAcceptHandler(Logger logger=LogManager::GetLogger("SocketAcceptHandler"));
+        virtual int HandleEvent(int fd) override;
+
+    };
+
+    class SocketReadHandler : public EventHandler {
+    private:
+        Logger  m_logger;
+    public:
+        SocketReadHandler(Logger logger=LogManager::GetLogger("SocketReadHandler"));
+        virtual int HandleEvent(int fd) override;
 
     };
 }

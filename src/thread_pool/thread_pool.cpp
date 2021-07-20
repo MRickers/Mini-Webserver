@@ -14,7 +14,7 @@ namespace thread_pool {
     _mutex(),
     _cond(),
     _logger(logger) {
-
+        _logger->Debug("Initilizing threadpool");
         for(int i=0;i<_thread_count;++i) {
             _threads.push_back(std::thread(&ThreadPool::worker, this));
         }
@@ -43,11 +43,12 @@ namespace thread_pool {
             if(!_running) {
                 break;
             }
-
+            _logger->Debug("Work incoming");
             const auto task = _queue.Pop();
 
             if(task.has_value()) {
                 const auto func = task.value();
+                _logger->Debug("Doing my duty");
                 func();
             }
             
